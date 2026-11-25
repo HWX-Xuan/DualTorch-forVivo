@@ -1,0 +1,33 @@
+# 构建产物
+*.apk
+*.aab
+*.idsig
+*.dex
+*.class
+build/
+*/build/
+.gradle/
+local.properties
+
+# 签名文件：只留给自己，绝不提交
+*.keystore
+*.jks
+
+# IDE / 系统
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db
+
+# 临时
+*.log
+*.tmp
+
+# 工具缓存
+.codebuddy/
+
+# 交付压缩包
+*.zip
+/dist/
+*.idsig

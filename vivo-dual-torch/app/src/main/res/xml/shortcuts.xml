@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_tile"
+        android:shortcutId="torch_toggle"
+        android:shortcutLongLabel="@string/sc_toggle_long"
+        android:shortcutShortLabel="@string/sc_toggle_short">
+        <intent
+            android:action="com.dualtorch.app.SHORTCUT"
+            android:targetClass="com.dualtorch.app.ShortcutActivity"
+            android:targetPackage="com.dualtorch.app">
+            <extra
+                android:name="cmd"
+                android:value="toggle" />
+        </intent>
+    </shortcut>
+
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_tile_led"
+        android:shortcutId="led_cycle"
+        android:shortcutLongLabel="@string/sc_led_long"
+        android:shortcutShortLabel="@string/sc_led_short">
+        <intent
+            android:action="com.dualtorch.app.SHORTCUT"
+            android:targetClass="com.dualtorch.app.ShortcutActivity"
+            android:targetPackage="com.dualtorch.app">
+            <extra
+                android:name="cmd"
+                android:value="cycle_led" />
+        </intent>
+    </shortcut>
+
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_tile_bright"
+        android:shortcutId="bright_cycle"
+        android:shortcutLongLabel="@string/sc_bright_long"
+        android:shortcutShortLabel="@string/sc_bright_short">
+        <intent
+            android:action="com.dualtorch.app.SHORTCUT"
+            android:targetClass="com.dualtorch.app.ShortcutActivity"
+            android:targetPackage="com.dualtorch.app">
+            <extra
+                android:name="cmd"
+                android:value="cycle_bright" />
+        </intent>
+    </shortcut>
+
+    <shortcut
+        android:enabled="true"
+        android:icon="@drawable/ic_tile"
+        android:shortcutId="torch_off"
+        android:shortcutLongLabel="@string/sc_off_long"
+        android:shortcutShortLabel="@string/sc_off_short">
+        <intent
+            android:action="com.dualtorch.app.SHORTCUT"
+            android:targetClass="com.dualtorch.app.ShortcutActivity"
+            android:targetPackage="com.dualtorch.app">
+            <extra
+                android:name="cmd"
+                android:value="off" />
+        </intent>
+    </shortcut>
+
+</shortcuts>

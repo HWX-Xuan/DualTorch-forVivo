@@ -1,0 +1,40 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.dualtorch.app'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.dualtorch.app"
+        minSdk 29
+        targetSdk 35
+        versionCode 10000
+        versionName "1.0.0"
+    }
+
+    buildTypes {
+        debug {
+            minifyEnabled false
+        }
+        release {
+            minifyEnabled false
+            // 自签名即可，本工程不依赖任何第三方库
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        abortOnError false
+    }
+}
+
+// 纯 framework API，无 AndroidX 依赖，APK 体积 ~40KB
+dependencies {
+}

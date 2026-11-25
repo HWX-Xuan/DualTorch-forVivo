@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">双芯闪光灯</string>
+    <string name="probe_title">硬件探测</string>
+    <string name="tile_label">双芯闪光灯</string>
+    <string name="tile_led_label">手电灯路</string>
+    <string name="tile_bright_label">手电亮度</string>
+
+    <string name="sc_toggle_short">开/关手电</string>
+    <string name="sc_toggle_long">开 / 关手电（按上次的灯路与亮度）</string>
+    <string name="sc_led_long">切换灯路：广角单灯 ↔ 双灯</string>
+    <string name="sc_led_short">切灯路</string>
+    <string name="sc_bright_short">切亮度</string>
+    <string name="sc_bright_long" formatted="false">切换亮度：100% → 70% → 40%</string>
+    <string name="sc_off_short">关灯</string>
+    <string name="sc_off_long">关闭手电</string>
+</resources>

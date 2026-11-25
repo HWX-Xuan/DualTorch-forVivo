@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>vivo 双变焦闪光灯 · 技术方案</title>
+<style>
+  :root{
+    --bg:#0a0c10; --panel:#141821; --stroke:#232a38; --text:#eef1f6;
+    --dim:#8b94a7; --accent:#ffb020; --accent2:#ff7a00; --blue:#4da3ff; --green:#37d67a;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    line-height:1.75; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:940px;margin:0 auto;padding:56px 28px 96px}
+  .eyebrow{color:var(--accent);font-size:11px;letter-spacing:.3em;text-transform:uppercase}
+  h1{font-size:38px;line-height:1.25;margin:14px 0 10px;letter-spacing:-.01em}
+  h1 small{display:block;font-size:15px;color:var(--dim);font-weight:400;letter-spacing:0;margin-top:12px}
+  h2{font-size:21px;margin:56px 0 6px;letter-spacing:.01em}
+  h2 .num{color:var(--accent);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;margin-right:10px;vertical-align:2px}
+  h3{font-size:15px;margin:26px 0 6px;color:#cdd5e2}
+  p{margin:10px 0;color:#c7cfdb}
+  .lede{font-size:16px;color:#aab4c4;max-width:760px}
+  .rule{height:1px;background:linear-gradient(90deg,var(--accent),transparent);margin:34px 0 0;opacity:.5}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:28px 0 8px}
+  .card{background:var(--panel);border:1px solid var(--stroke);border-radius:16px;padding:16px 18px}
+  .card b{display:block;font-size:26px;color:var(--accent);letter-spacing:-.02em}
+  .card span{font-size:12px;color:var(--dim);line-height:1.6}
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13.5px}
+  th{text-align:left;color:var(--dim);font-weight:500;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+     border-bottom:1px solid var(--stroke);padding:10px 12px}
+  td{padding:11px 12px;border-bottom:1px solid #1a2029;vertical-align:top;color:#c2cad7}
+  tr:last-child td{border-bottom:none}
+  td b{color:var(--text)}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;background:#0e1219;
+       border:1px solid #1d242f;border-radius:6px;padding:1px 6px;color:#ffd08a}
+  pre{background:#070a0e;border:1px solid #1c2430;border-radius:14px;padding:16px 18px;overflow:auto;font-size:12.5px;line-height:1.7}
+  pre code{background:none;border:none;padding:0;color:#9fb2c8}
+  .quote{border-left:3px solid var(--accent);background:#12161f;padding:14px 18px;border-radius:0 12px 12px 0;margin:18px 0;color:#cfd7e4;font-size:14px}
+  .quote cite{display:block;margin-top:8px;color:var(--dim);font-size:11.5px;font-style:normal}
+  .note{background:#0f1a14;border:1px solid #1e3a2a;border-radius:14px;padding:14px 18px;margin:18px 0;font-size:13.5px;color:#b7d8c4}
+  .warn{background:#1a1410;border:1px solid #3a2a1e;border-radius:14px;padding:14px 18px;margin:18px 0;font-size:13.5px;color:#e0c3a5}
+  .tag{display:inline-block;font-size:10.5px;padding:2px 8px;border-radius:100px;border:1px solid #2c3444;color:var(--dim);margin-right:6px}
+  .tag.ok{border-color:#2a4a37;color:#7fd8a3}
+  .tag.mid{border-color:#4a3d22;color:#e0b467}
+  .tag.no{border-color:#4a2a2a;color:#e08a8a}
+  ol.steps{counter-reset:s;list-style:none;padding:0;margin:18px 0}
+  ol.steps li{counter-increment:s;position:relative;padding-left:42px;margin-bottom:16px;color:#c2cad7;font-size:14px}
+  ol.steps li::before{content:counter(s);position:absolute;left:0;top:1px;width:26px;height:26px;border-radius:50%;
+    background:#1b2130;border:1px solid #2c3444;color:var(--accent);font-size:12px;display:flex;align-items:center;justify-content:center}
+  .fig{background:var(--panel);border:1px solid var(--stroke);border-radius:18px;padding:18px;margin:22px 0}
+  .fig figcaption{color:var(--dim);font-size:11.5px;margin-top:10px;text-align:center}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  footer{margin-top:64px;padding-top:22px;border-top:1px solid var(--stroke);color:#5e6879;font-size:11.5px}
+  @media(max-width:720px){.cards{grid-template-columns:1fr}.two{grid-template-columns:1fr}h1{font-size:28px}.wrap{padding:36px 18px 64px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">DualTorch · 技术方案</div>
+  <h1>让两颗变焦闪光灯一起亮
+    <small>针对 vivo X300 Ultra / X200 Ultra / X300 Pro 的双 LED 手电筒实现路径与工程验证</small>
+  </h1>
+
+  <p class="lede">系统手电筒只驱动一颗灯，相机却能同时点亮两颗。这不是权限问题，而是 Android 的 Flash 抽象与厂商 HAL 之间的缝隙。下面是从硬件事实、开源调研到可安装 APK 的完整推演。</p>
+
+  <div class="cards">
+    <div class="card"><b>2 颗</b><span>灯珠挂在同一颗闪光灯驱动 IC 的两个通道上</span></div>
+    <div class="card"><b>1 个</b><span>Camera2 里每个 cameraId 只对应一个 Flash 单元</span></div>
+    <div class="card"><b>4 条</b><span>可尝试的通路：系统手电 / 相机会话 / Vendor / Root</span></div>
+  </div>
+
+  <div class="rule"></div>
+
+  <h2><span class="num">01</span>硬件事实：双灯是怎么被选中的</h2>
+
+  <p>先把「变焦闪光灯」这个词拆开。它并不是真的能变焦，而是<b>两颗发光角不同的 LED 组合出三种光斑</b>：一颗大角度泛光、一颗窄角度聚光，中焦段两颗一起开、光斑叠加成一片均匀的柔光——vivo 把这套叠加算法叫「光斑融合」。</p>
+
+  <div class="quote">
+    拍照模式下 15mm–48mm 用<b>一个灯</b>补光；48mm–85mm 以及 85mm 以上用<b>两个灯</b>补光。不管拍人像还是日常场景，都会自动调节。
+    <cite>vivo 官方社区 · X300 Pro 多焦段闪光灯答疑</cite>
+  </div>
+
+  <table>
+    <thead><tr><th>机型</th><th>灯珠布局</th><th>官方焦段策略</th><th>驱动方式</th></tr></thead>
+    <tbody>
+      <tr><td><b>X200 Ultra</b></td><td>上=广角主闪，下=长焦闪（窄光束，有效 4m）</td><td>50mm 以下主闪；50–135mm 启用下方长焦闪</td><td rowspan="3">单颗双通道 LED 驱动 IC，通道选择由相机 HAL 的闪光算法按焦段决定</td></tr>
+      <tr><td><b>X300 Pro</b></td><td>双灯 + 光斑融合，覆盖 24 / 50 / 85mm</td><td>&lt;48mm 单灯；≥48mm 双灯</td></tr>
+      <tr><td><b>X300 Ultra</b></td><td>同代全焦段方案</td><td>长焦段双灯</td></tr>
+    </tbody>
+  </table>
+
+  <p>关键结论：<b>「点亮哪几颗」这个决定发生在 HAL 内部，不在 App 层。</b>应用能看到的只有一个布尔值 <code>FLASH_INFO_AVAILABLE</code>。</p>
+
+  <h2><span class="num">02</span>为什么系统手电筒永远只亮一颗</h2>
+
+  <p>Android 的相机栈里，闪光灯是挂在 <b>camera device</b> 上的属性，不是独立设备。所以：</p>
+
+  <ul style="color:#c2cad7;font-size:14px">
+    <li><code>CameraManager.setTorchMode(cameraId, true)</code> 一次只能指定一个 cameraId；</li>
+    <li>同一个 cameraId 的 torch 请求，HAL 内部映射到<b>固定的那一路通道</b>（通常就是主闪）；</li>
+    <li>Android 13 加的 <code>turnOnTorchWithStrengthLevel()</code> 只调<b>电流档位</b>，不换通道；</li>
+    <li>SystemUI 的手电筒磁贴更简单——只取第一个后置带闪光的相机。</li>
+  </ul>
+
+  <div class="fig">
+    <svg viewBox="0 0 860 330" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,PingFang SC,sans-serif">
+      <defs>
+        <marker id="a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+          <path d="M0,0 L7,3 L0,6 z" fill="#4da3ff"/>
+        </marker>
+        <marker id="b" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+          <path d="M0,0 L7,3 L0,6 z" fill="#ffb020"/>
+        </marker>
+      </defs>
+
+      <rect x="14" y="26" width="150" height="46" rx="10" fill="#141821" stroke="#232a38"/>
+      <text x="89" y="54" fill="#eef1f6" font-size="13" text-anchor="middle">手电筒 App</text>
+
+      <rect x="14" y="106" width="150" height="46" rx="10" fill="#141821" stroke="#232a38"/>
+      <text x="89" y="134" fill="#eef1f6" font-size="13" text-anchor="middle">相机 App</text>
+
+      <rect x="228" y="26" width="176" height="46" rx="10" fill="#101720" stroke="#2a3a4d"/>
+      <text x="316" y="54" fill="#9fc4ea" font-size="12.5" text-anchor="middle">CameraManager</text>
+      <text x="316" y="88" fill="#5e6879" font-size="10.5" text-anchor="middle">setTorchMode()</text>
+
+      <rect x="228" y="106" width="176" height="46" rx="10" fill="#101720" stroke="#2a3a4d"/>
+      <text x="316" y="134" fill="#9fc4ea" font-size="12.5" text-anchor="middle">CaptureSession</text>
+      <text x="316" y="168" fill="#5e6879" font-size="10.5" text-anchor="middle">FLASH_MODE_TORCH + zoom</text>
+
+      <rect x="468" y="66" width="170" height="46" rx="10" fill="#141821" stroke="#232a38"/>
+      <text x="553" y="94" fill="#eef1f6" font-size="12.5" text-anchor="middle">Camera HAL 闪光算法</text>
+
+      <rect x="700" y="30" width="140" height="40" rx="10" fill="#1c1608" stroke="#4a3a16"/>
+      <text x="770" y="55" fill="#ffcf80" font-size="12" text-anchor="middle">LED A · 广角</text>
+
+      <rect x="700" y="108" width="140" height="40" rx="10" fill="#0f1a14" stroke="#1e3a2a"/>
+      <text x="770" y="133" fill="#8fd9ae" font-size="12" text-anchor="middle">LED B · 长焦</text>
+
+      <path d="M164,49 L222,49" stroke="#4da3ff" stroke-width="1.6" marker-end="url(#a)"/>
+      <path d="M164,129 L222,129" stroke="#ffb020" stroke-width="1.6" marker-end="url(#b)"/>
+      <path d="M404,49 C440,49 440,80 462,84" stroke="#4da3ff" stroke-width="1.6" fill="none" marker-end="url(#a)"/>
+      <path d="M404,129 C440,129 440,100 462,96" stroke="#ffb020" stroke-width="1.6" fill="none" marker-end="url(#b)"/>
+      <path d="M638,80 L694,54" stroke="#4da3ff" stroke-width="1.6" fill="none" marker-end="url(#a)"/>
+      <path d="M638,98 L694,126" stroke="#ffb020" stroke-width="1.6" fill="none" marker-end="url(#b)"/>
+
+      <text x="180" y="200" fill="#4da3ff" font-size="10.5">捷径：固定映射到主通道</text>
+      <text x="180" y="218" fill="#ffb020" font-size="10.5">完整链路：按焦段算通道组合</text>
+
+      <rect x="14" y="240" width="826" height="70" rx="12" fill="#0d1118" stroke="#1c2430"/>
+      <text x="30" y="266" fill="#8b94a7" font-size="11.5">同一个物理闪光灯模块，两条入口。系统手电走上面那条，只到 LED A；</text>
+      <text x="30" y="288" fill="#8b94a7" font-size="11.5">相机会话走下面那条，HAL 会按 zoom 决定是否把 LED B 一起打开 —— 这就是本方案的核心。</text>
+    </svg>
+    <figcaption>图 1 · 闪光灯控制链路：应用层的两条入口</figcaption>
+  </div>
+
+  <h2><span class="num">03</span>开源调研：为什么没有现成轮子</h2>
+
+  <p>GitHub 上做手电筒的项目很多，但绝大多数停在 <code>setTorchMode</code> 这一层。挑几个有代表性的：</p>
+
+  <table>
+    <thead><tr><th>项目</th><th>做法</th><th>对双灯的意义</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>danferns/lights</b></td>
+        <td>遍历所有带闪光灯的 cameraId，各自独立开关，宣称可同时点亮前后闪光灯，且不需要相机权限</td>
+        <td><span class="tag mid">部分</span>只有「长焦相机也上报了 Flash 单元」时才能双亮；vivo 这类单 Flash 单元 + 双通道 IC 的结构它无能为力</td>
+      </tr>
+      <tr>
+        <td><b>InkAssists/torch-tile</b></td>
+        <td>用 <code>setTorchMode</code> 包一个快捷设置磁贴，绕开 Android 16 坏掉的系统手电筒磁贴</td>
+        <td><span class="tag no">无</span>纯 UI 封装，通路不变</td>
+      </tr>
+      <tr>
+        <td><b>30n1ne/1tourch</b></td>
+        <td>Camera2 强度档位做 1–5 级调光</td>
+        <td><span class="tag mid">间接</span>只能调电流，不能选通道</td>
+      </tr>
+      <tr>
+        <td><b>PDDStudio/easyflashlight 等</b></td>
+        <td>对 Camera2 torch 的库封装</td>
+        <td><span class="tag no">无</span>同一层 API 的再包装</td>
+      </tr>
+      <tr>
+        <td><b>AOSP SystemUI · FlashlightController</b></td>
+        <td>取第一个后置带闪光的相机，调 <code>setTorchMode</code></td>
+        <td><span class="tag no">无</span>官方实现本身就只点亮一颗</td>
+      </tr>
+      <tr>
+        <td><b>内核 leds-flash / leds-class-flash</b></td>
+        <td>MTK/高通平台导出 <code>led:torch_0</code>、<code>led:torch_1</code>、<code>led:switch_0</code> 等节点，直接 echo 数值即可分通道点亮</td>
+        <td><span class="tag ok">能</span>唯一确定性的办法，但要 root</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note">
+    <b>调研结论：</b>没有现成项目解决这个问题，因为它们全都待在 App 层，而「点哪颗灯」的决定权在 HAL。要突破，只有两条路——<b>让 HAL 自己决定</b>（复刻相机的请求链路），或者<b>绕过 HAL</b>（root 写 sysfs）。
+  </div>
+
+  <h2><span class="num">04</span>四条通路，按可行性排序</h2>
+
+  <table>
+    <thead><tr><th>通路</th><th>原理</th><th>门槛</th><th>成功率</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>① 相机会话 + 焦段联动</b></td>
+        <td>建一路预览流，重复请求里设 <code>FLASH_MODE_TORCH</code>、<code>CONTROL_AE_MODE</code>，并把 <code>CONTROL_ZOOM_RATIO</code> 拉到 2× 以上。HAL 的闪光算法会按焦段重新算通道组合</td>
+        <td>相机权限</td>
+        <td><span class="tag ok">最有希望</span></td>
+      </tr>
+      <tr>
+        <td><b>② 多相机系统手电</b></td>
+        <td>遍历 cameraId 逐个 <code>setTorchMode</code>，若长焦相机也注册了独立 Flash 单元，就可能点亮第二颗</td>
+        <td>无</td>
+        <td><span class="tag mid">看厂商</span></td>
+      </tr>
+      <tr>
+        <td><b>③ Vendor tag 注入</b></td>
+        <td>从 <code>getAvailableCaptureRequestKeys()</code> 里找 <code>com.vivo.*</code> 私有 key，直接塞进请求。部分厂商会开放 flash 相关 tag</td>
+        <td>相机权限 + 正确的 key</td>
+        <td><span class="tag mid">看 HAL</span></td>
+      </tr>
+      <tr>
+        <td><b>④ Root 写 sysfs</b></td>
+        <td><code>echo N &gt; /sys/class/leds/led:torch_1/brightness</code>，两路通道完全独立可控</td>
+        <td>root</td>
+        <td><span class="tag ok">确定</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>为什么①真的可能奏效</h3>
+  <p>vivo 的「双灯」不是一个独立的开关，而是相机拍照链路里算出来的结果。它的输入至少包括当前焦段、AE 模式、场景亮度。当 App 用完整 capture 请求把这三样都喂进去时，HAL 没有任何理由区别对待「相机 App」和「第三方 App」——除非它在 framework 层加了白名单。</p>
+
+  <pre><code>// CameraSessionEngine 的核心：把 HAL 需要的上下文凑齐
+builder = device.createCaptureRequest(TEMPLATE_PREVIEW);
+builder.addTarget(reader.getSurface());
+builder.set(CONTROL_AE_MODE, CONTROL_AE_MODE_ON);
+builder.set(FLASH_MODE,     FLASH_MODE_TORCH);
+builder.set(CONTROL_ZOOM_RATIO, 3.0f);   // ← 关键：让 HAL 以为你在用长焦
+session.setRepeatingRequest(builder.build(), null, handler);</code></pre>
+
+  <p>App 里把焦段做成了实时滑杆：会话保持期间拖动它，请求会重新下发，可以亲眼看到第二颗灯在哪个倍率被带起来。这个临界点就是这台机器最真实的证据。</p>
+
+  <h2><span class="num">05</span>工程实现</h2>
+
+  <div class="two">
+    <div>
+      <h3>四层结构</h3>
+      <p style="font-size:13.5px"><b>UI 层</b>：双通道开关、策略切换、亮度/焦段/频闪、实时日志。<br>
+      <b>调度层</b>：<code>TorchController</code> 负责四条通路的互斥与降级——系统手电和相机会话不能同时占用同一颗相机，切换时要先释放再点亮。<br>
+      <b>引擎层</b>：四个独立引擎，各自封装一条通路。<br>
+      <b>探测层</b>：把相机能力、私有 key、sysfs 节点全部打印出来，供人工判断。</p>
+    </div>
+    <div>
+      <h3>几个必须处理的坑</h3>
+      <p style="font-size:13.5px">· 相机会话需要一路真实 surface，用 ImageReader 持续丢弃帧维持管线；<br>
+      · 预览尺寸必须从 <code>StreamConfigurationMap</code> 里挑，硬编码 640×480 在部分机型上直接抛异常；<br>
+      · 系统手电会占住相机，切到会话模式前必须先 <code>setTorchMode(false)</code> 并等 HAL 释放；<br>
+      · root 检测会阻塞（Magisk 还弹授权框），必须放后台线程，否则首屏就 ANR。</p>
+    </div>
+  </div>
+
+  <h3>界面</h3>
+  <p>主界面三个区：两个光源通道卡片（A 主闪 / B 变焦闪）、策略与参数、调试日志。日志是刻意放大的——这个工具的成败完全取决于你能否从日志里看出哪条通路真的把请求送到了 HAL。</p>
+
+  <h2><span class="num">06</span>真机反馈与修正</h2>
+
+  <p>X300 Pro（V2547A，Android 17）第一次实测：策略选「相机会话」，只开 B 通道，滑杆放在 1.0×，结果<b>两颗灯一起亮了</b>。</p>
+
+  <p>原因很直接：代码里为了让 B 生效，把 zoom 顶到了 <code>max(zoom, 2.0)</code>。而 2.0× 对应 48mm，<b>正好踩在 vivo 的双灯阈值上</b>。主摄会话里 HAL 只有「单灯 / 双灯」两种结果，不存在「只点长焦」这个选项 —— 这不是 bug，是我把 A/B 的语义设计错了。</p>
+
+  <table>
+    <thead><tr><th>现象</th><th>真实原因</th><th>v1.1 修正</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>只要 B，却两颗都亮</td>
+        <td>主摄会话按焦段决策，2.0× 已进入双灯区间</td>
+        <td>只开 B 时自动切到<b>长焦相机自己的会话</b>（zoom=1.0 即该镜头原生焦段）；长焦不可直开则回退主摄并明确提示</td>
+      </tr>
+      <tr>
+        <td>不知道 HAL 到底给不给单独点长焦</td>
+        <td>之前没有手动指定会话相机的入口</td>
+        <td>会话相机改为 <b>自动 / 主摄 / 长焦</b> 三选一，三种组合都能试</td>
+      </tr>
+      <tr>
+        <td>亮度只有一个「默认」</td>
+        <td>API 33 的强度接口只作用于 setTorchMode，会话里没有</td>
+        <td>接入 <code>FLASH_STRENGTH_LEVEL</code>（API 35），预览流里直接下硬件档位</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>亮度控制的三种实现</h3>
+
+  <table>
+    <thead><tr><th>方式</th><th>API</th><th>作用范围</th><th>质量</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>会话内硬件档位</b></td>
+        <td><code>CaptureRequest.FLASH_STRENGTH_LEVEL</code>（API 35）</td>
+        <td>相机会话，双灯也能调</td>
+        <td><span class="tag ok">最佳</span>直接改驱动 IC 电流，无频闪</td>
+      </tr>
+      <tr>
+        <td><b>系统手电档位</b></td>
+        <td><code>turnOnTorchWithStrengthLevel</code>（API 33）</td>
+        <td>仅 setTorchMode 通路</td>
+        <td><span class="tag ok">好</span>同样是硬件调流</td>
+      </tr>
+      <tr>
+        <td><b>脉冲占空比</b></td>
+        <td>无（30Hz 开关）</td>
+        <td>任意通路</td>
+        <td><span class="tag mid">兜底</span>快速晃动可见频闪</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>滑杆的百分比会按 <code>1 + round((max-1) × p/100)</code> 映射到硬件档位；<code>max=1</code> 说明这颗闪光灯不支持调流，系统手电模式自动退回脉冲调光，会话模式则在界面上直说「调不了」—— 不假装能调。</p>
+
+  <pre><code>// 会话内调光：Android 15 起才有的 key
+int max = chars.get(CameraCharacteristics.FLASH_TORCH_STRENGTH_MAX_LEVEL);
+if (max &gt; 1 &amp;&amp; percent &gt; 0) {
+    builder.set(CaptureRequest.FLASH_STRENGTH_LEVEL, 1 + round((max - 1) * percent / 100f));
+}</code></pre>
+
+  <h2><span class="num">07</span>真机验证 SOP</h2>
+
+  <ol class="steps">
+    <li><b>看清单。</b>进「硬件探测」，确认有几颗相机上报 <code>flash=YES</code>，以及 <code>maxLevel</code> 是否大于 1。两颗以上 → 通路②有机会；只有一颗 → 直接走通路①。</li>
+    <li><b>粗暴测试。</b>探测页点「全开」，对每颗相机同时下发 torch，用眼睛看亮几颗。这是最快的分水岭。</li>
+    <li><b>会话测试。</b>回主界面，策略切「相机会话」，焦段先放 1×，点「双灯全开」——应该只有一颗亮；再把滑杆推到 3×–4.6×，看第二颗是否亮起。</li>
+    <li><b>扫私有 key。</b>如果③没反应，把探测页里的 <code>com.vivo.*</code> 键逐个试：主界面填 key/value 点「注入」，观察灯的变化。名字里带 flash / torch / led / dual 的优先。</li>
+    <li><b>记录临界点。</b>把「第二颗灯开始亮的倍率」和「生效的策略」记下来，这就是这台机器的最终答案。</li>
+  </ol>
+
+  <div class="warn">
+    <b>必须接受的边界：</b>未 root 的情况下，能不能双亮完全取决于 vivo 的 HAL 有没有把这条路径开放给第三方。本工具不能保证成功，它保证的是<b>把四种可能都试一遍，并且让你看得见结果</b>。若四条通路全部失败，剩下的选项只有 root、或者向 vivo 申请私有 SDK。
+  </div>
+
+  <h2><span class="num">08</span>风险与后续</h2>
+
+  <table>
+    <thead><tr><th>风险</th><th>说明</th><th>缓解</th></tr></thead>
+    <tbody>
+      <tr><td>过热降流</td><td>双灯全功率工作时驱动 IC 会触发热保护，亮度自己掉下来</td><td>避免长时间连续点亮；观察亮度衰减属正常</td></tr>
+      <tr><td>相机被抢占</td><td>息屏、切后台、其他 App 调用相机都会导致会话断开</td><td>保持前台；失败后重新点一次即可</td></tr>
+      <tr><td>厂商封堵</td><td>系统升级可能收紧 vendor tag 或 torch 映射</td><td>探测页可随时重新验证</td></tr>
+      <tr><td>变砖风险</td><td>若为双灯去解 BL / 刷模块，vivo 旗舰有防篡改检测</td><td>不建议；本方案不依赖 root</td></tr>
+    </tbody>
+  </table>
+
+  <h3>如果四条都不行</h3>
+  <p>剩下三条路：向 vivo 影像开放平台申请私有 Camera SDK（需企业资质）；用 LSPosed 在 HAL 客户端侧 hook（需 root）；或者退一步——用相机 App 的 3× 变焦 + 闪光灯常亮模式，把「拍照」当成手电筒用。</p>
+
+  <h2><span class="num">09</span>第二轮复盘：四条通路全灭之后</h2>
+
+  <p>1.1 版在 X300 Pro（V2547A，Android 17）上实测的结果是：<b>所有通路都失败</b>。具体表现是「不管只开 A 还是只开 B，两颗灯一起亮」，亮度滑杆也毫无反应。这不是参数没调对，而是我把「应用层能控制到什么粒度」这件事想错了。下面是复盘用的证据链。</p>
+
+  <table>
+    <thead><tr><th>证据</th><th>原文 / 事实</th><th>推论</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>vivo 官方社区（X200 Ultra）</td>
+        <td>「后置配备两颗闪光灯……会根据不同拍摄焦段自动协同工作」；上方灯 0.6–2.2×，下方灯 2.2–4× 为长焦灯，中间是多光谱传感器。用户追问「如何切换另一个或两个全亮」，官方答复是「把建议收集记录」。</td>
+        <td>厂商<b>没有</b>提供手动切换单灯的入口，这是产品定义，不是遗漏。</td>
+      </tr>
+      <tr>
+        <td>vivo 官方答疑（X300 Pro）</td>
+        <td>「15–48mm 只用一颗，48–85mm 用两颗」。</td>
+        <td>选灯是<b>相机 HAL 的闪光算法</b>按焦段算的，只发生在「拍照闪光」这条链路里。</td>
+      </tr>
+      <tr>
+        <td>AOSP Camera2</td>
+        <td><code>CameraManager</code> 只有 <code>setTorchMode(cameraId, on)</code> 和 <code>turnOnTorchWithStrengthLevel(cameraId, level)</code>；粒度是 <b>cameraId</b>，一个 cameraId 对应一个 Flash 单元。</td>
+        <td>应用层根本没有「第几颗 LED」这个参数可传。</td>
+      </tr>
+      <tr>
+        <td>Linux 闪光灯驱动</td>
+        <td>高通 <code>leds-qcom-flash</code> 导出 <code>led:torch_0/1</code>、<code>led:flash_0/1</code>；联发科 <code>flashlight_core</code> 的 <code>flashlight_strobe</code> 命令是 <code>TYPE CT PART LEVEL DURATION</code>，<b>PART 才是灯路</b>。</td>
+        <td>「单灯」这个粒度只存在于<b>驱动层</b>。HAL 之上被合并成了一个开关。</td>
+      </tr>
+      <tr>
+        <td>GitHub <code>kailashrs/camx-fullsize</code></td>
+        <td>X200 Ultra 的 KernelSU 模块：靠改 <code>/vendor/etc/camera/camxoverridesettings.txt</code>、改 <code>vendor.camera.aux.packagelist</code> 才能让第三方 App 看到隐藏的物理相机。</td>
+        <td>vivo 连「物理相机」都对第三方隐藏，更不会单独暴露一颗灯。绕开它必须 root + 改 HAL 配置。</td>
+      </tr>
+      <tr>
+        <td>开源手电 App（danferns/lights 等）</td>
+        <td>实现都停在 <code>setTorchMode</code> 循环遍历 cameraId 这一层。</td>
+        <td>社区里没有现成方案，因为它们也到不了 HAL 内部。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="warn">
+    <b>结论：</b>「只点长焦那颗」在无 root 的应用层是做不到的。torch 这条链路在 HAL 里就是「整组 LED 一起开」，两颗灯同时亮是<b>符合设计的行为</b>，不是 bug。我前两版让你去调焦段、换会话相机，方向本身就错了。
+  </div>
+
+  <h3>亮度为什么也没反应</h3>
+
+  <p>应用层调亮度只有一条合法路径：<code>turnOnTorchWithStrengthLevel</code>（API 33）/ <code>FLASH_STRENGTH_LEVEL</code>（API 35）。它能不能生效，取决于 HAL 有没有上报 <code>FLASH_INFO_STRENGTH_MAXIMUM_LEVEL &gt; 1</code>，以及驱动有没有真的按档位改电流。1.1 版在 <code>max=1</code> 时会自动退到「30Hz 脉冲调光」，而 <code>setTorchMode</code> 单次调用就要几十到上百毫秒 —— 30Hz 根本跑不起来，看起来就是「拖了没反应」。这是我自己引入的假象，2.0 已经删掉。</p>
+
+  <h3>2.0 改成「先证明，再谈控制」</h3>
+
+  <p>与其继续猜，不如把这件事做成一次可复现的实验：把每个候选 cameraId 逐个点亮，由用户肉眼确认亮了几颗，再把亮度档位设下去并<b>回读</b>，最后给出结论。整个过程 1 分钟，结论只有三种：</p>
+
+  <table>
+    <thead><tr><th>自检结果</th><th>含义</th><th>下一步</th></tr></thead>
+    <tbody>
+      <tr><td>某个 cameraId <b>只亮一颗</b></td><td>HAL 确实拆开了单灯通道</td><td><span class="tag ok">可用</span>把系统手电指到那个 id，单灯就成立</td></tr>
+      <tr><td>所有 cameraId 都<b>两颗都亮</b></td><td>torch 被绑到整组 LED</td><td>无 root 到此为止；要单灯只能走驱动层</td></tr>
+      <tr><td>全部<b>点不亮</b></td><td>相机被占用，或厂商禁用了第三方 torch</td><td>关掉相机 App / 重启后再测</td></tr>
+    </tbody>
+  </table>
+
+  <p>亮度同理：设最高档 → 回读；设最低档 → 回读；再问用户「变暗了吗」。如果回读变了但灯没变，说明 HAL 只是接受了参数、没落到驱动电流上 —— 这种「假支持」只有靠肉眼才能识破。</p>
+
+  <pre><code>// 2.0 的判定逻辑（简化）
+setTorchLevel(id, max);  readAtMax = getTorchStrengthLevel(id);
+setTorchLevel(id, 1);    readAtOne = getTorchStrengthLevel(id);
+// 回读一致 + 肉眼无变化  =&gt; HAL 接受了档位，但没落到电流
+// 回读一致 + 肉眼变暗      =&gt; 真支持
+// 回读报错/恒为 -1        =&gt; 系统不支持</code></pre>
+
+  <h3>如果自检证明「做不到」，还剩什么</h3>
+
+  <ol class="steps">
+    <li><b>Root + 驱动节点。</b>高通写 <code>led:torch_0</code> / <code>led:torch_1</code> 的 <code>brightness</code>；联发科写 <code>flashlight_strobe</code> 的 <code>PART</code> 参数。这是唯一确定能分开两颗灯的方式，2.0 的「Root 直控」页就是干这个的。</li>
+    <li><b>等 vivo 开放私有接口。</b>目前没有公开的影像 SDK 提供闪光灯通道选择。</li>
+    <li><b>退一步。</b>用 vivo 相机在 ≥50mm 拍一张带闪光的照片 —— 那一刻 HAL 点的确实是下面那颗长焦灯，只是它只闪一下。</li>
+  </ol>
+
+  <h2><span class="num">10</span>第三轮：真机自检的实测结果</h2>
+
+  <p>2.0 的自检在 X300 Pro（V2547A，Android 17，无 root）上跑完了。结果不是「全灭」，而是一个很具体的形状：<b>单灯通道存在，但只属于上面那颗</b>。</p>
+
+  <pre><code>设备 : vivo V2547A / PD2547 / API 37      Root : 无      相机 : 8 个候选
+
+camera 0 · 后置 · 11.6mm              只亮上面那颗        ← 唯一可用
+camera 3 · 后置 · 11.6mm · 物理子相机    invalid cameraId
+camera 4 · 后置 · 4.0mm  · 物理子相机    invalid cameraId
+camera 5 · 后置 · 22.5mm · 物理子相机    invalid cameraId  ← 长焦
+camera 2 / 6 / 7 · 未在列表             invalid cameraId
+
+亮度 : turnOnTorchWithStrengthLevel(0, 5)
+       → IllegalArgumentException: Torch strength level 5 is not within the valid range.</code></pre>
+
+  <table>
+    <thead><tr><th>观察</th><th>推论</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>camera 0 的 torch 只点亮上面那颗</td>
+        <td>HAL 在 torch 通路上确实只驱动了单颗 LED，而且是<b>主补光那颗</b>。这也是普通手电筒该有的行为 —— 之前的「两颗一起亮」只发生在相机会话里。</td>
+      </tr>
+      <tr>
+        <td>22.5mm 长焦物理相机 <code>invalid cameraId</code></td>
+        <td>它不在 <code>getCameraIdList()</code> 里，<code>CameraManager</code> 直接拒绝。长焦灯在 torch 通路上<b>不可寻址</b>，不是参数问题。</td>
+      </tr>
+      <tr>
+        <td>档位 5 被拒</td>
+        <td>厂商上报的 <code>FLASH_INFO_STRENGTH_MAXIMUM_LEVEL=5</code> 是<b>单次闪光</b>的档位表；torch 实际校验的范围更小。声明与校验不一致，必须实测。</td>
+      </tr>
+      <tr>
+        <td>相机会话 2.0× 会双亮，系统手电只亮一颗</td>
+        <td>两条链路不同：<code>setTorchMode</code> 是 CameraService 的捷径，直接映射到主 LED；相机会话把请求交给 HAL 的闪光算法，按焦段决定点几颗。</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>v2.1 的四处修改</h3>
+
+  <table>
+    <thead><tr><th>问题</th><th>改法</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>亮度档位「声明一套、校验另一套」</td>
+        <td><code>probeMaxLevel()</code> 从声明值往下逐档真调，返回第一个被接受的档位；只接受 1 档就直接判定「不能调光」，不再给假滑杆</td>
+      </tr>
+      <tr>
+        <td>不知道 HAL 有没有留私有 tag</td>
+        <td>报告里全量导出 <code>getKeys()</code> / <code>getAvailableCaptureRequestKeys()</code> 中含 <code>flash/torch/led/strobe/light/vivo</code> 的 key 与值</td>
+      </tr>
+      <tr>
+        <td>长焦相机不可寻址</td>
+        <td>新增物理子相机会话：<code>OutputConfiguration.setPhysicalCameraId("5")</code> + <code>createCaptureSessionByOutputConfigurations</code> + <code>FLASH_MODE_TORCH</code>，这是唯一能「指名」长焦相机的合法 API</td>
+      </tr>
+      <tr>
+        <td>无法确认长焦灯是否还活着</td>
+        <td>新增单次闪光：主摄 3× + <code>FLASH_MODE_SINGLE</code>，HAL 会两颗一起闪 —— 灯是好的，只是不能常亮</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="warn">
+    <b>到此为止的确定结论：</b>无 root 时，应用层能拿到的最大粒度是「camera 0 的上面那颗」。<br>
+    长焦灯在 torch 通路上没有入口；物理子相机会话是最后一个可能，若 HAL 也不认，就只剩 root 或 vivo 私有接口。
+  </div>
+
+  <h3>为什么「物理子相机会话」还值得一试</h3>
+
+  <p>Camera2 的 Logical Multi-Camera 允许把某个 output 绑定到 <code>physicalCameraId</code> 上。虽然 <code>setTorchMode("5")</code> 被拒，但会话建立后，请求会带着「这条流属于 camera 5」的信息进入 HAL。如果 vivo 的闪光算法是按<b>流所属物理相机</b>选灯，而不是按逻辑相机的焦段，那这里就能单独点亮长焦灯。反之，如果 HAL 在 <code>configureStreams</code> 阶段就拒绝物理流，日志会直接写配置失败 —— 两种结果都能一次看清。</p>
+
+  <pre><code>OutputConfiguration oc = new OutputConfiguration(surface);
+oc.setPhysicalCameraId("5");                     // 指名长焦
+device.createCaptureSessionByOutputConfigurations(List.of(oc), cb, handler);
+// onConfigured 之后
+builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);</code></pre>
+
+  <h2><span class="num">11</span>接进系统入口：五个入口里能用的三个</h2>
+
+  <p>目标很直接：不打开 App 也能开关手电、切灯路、切亮度。先把 vivo 给的五个入口逐个验证了一遍，结论是<b>三个能接、两个接不了</b>。</p>
+
+  <table>
+    <thead><tr><th>入口</th><th>机制</th><th>能否接第三方</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><b>控制中心</b></td>
+        <td><code>TileService</code>，一个 App 可声明多个磁贴（每个磁贴一个 Service 子类）</td>
+        <td><span class="tag ok">可以</span>在「编辑 → 全部开关」里拖入</td>
+      </tr>
+      <tr>
+        <td><b>快捷启动（长按音量减）</b></td>
+        <td>列表里有「打开应用 &gt;」，绑到本 App 即可</td>
+        <td><span class="tag ok">可以</span>熄屏可用，是唯一的熄屏入口</td>
+      </tr>
+      <tr>
+        <td><b>轻敲背面</b></td>
+        <td>vivo 官方说明含「打开应用（如相机）」选项</td>
+        <td><span class="tag ok">可以</span>截图里只显示到上半段，往下滑有「打开应用」</td>
+      </tr>
+      <tr>
+        <td><b>锁屏右侧快捷入口</b></td>
+        <td>只列系统内置项：电话 / 计时器 / 计算器 / 录音 / 手电筒 / 相机 / 新建笔记</td>
+        <td><span class="tag no">不行</span>没有第三方入口，系统未开放 API</td>
+      </tr>
+      <tr>
+        <td><b>vivo 自带手电筒开关</b></td>
+        <td>系统 App 的私有实现，固定点 camera 0 的上面那颗</td>
+        <td><span class="tag no">不行</span>既不能替换也不能扩展</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>架构：所有入口只发命令，状态只有一个持有者</h3>
+
+  <pre><code>磁贴 / 快捷方式 / 通知按钮 / 冷启动
+              │  一条 Intent（on / off / toggle / cycle_led / cycle_bright）
+              ▼
+       ShortcutActivity（零界面，收完立刻 finish）
+              │  startForegroundService
+              ▼
+        TorchService  ←── 唯一持有 TorchController 的地方
+              │
+              ├── Prefs（灯路 / 亮度 / 开关，磁贴与界面共读）
+              └── 低优先级通知（关灯 / 切灯路 / 调亮度）</code></pre>
+
+  <p>几个必须踩过的坑：</p>
+
+  <table>
+    <thead><tr><th>坑</th><th>处理</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Android 12+ 禁止后台启动前台服务，磁贴里直接 <code>startForegroundService</code> 会抛异常</td>
+        <td>先试 FGS，失败则 <code>startActivityAndCollapse</code> 拉一个透明 Activity，由前台 Activity 再起服务</td>
+      </tr>
+      <tr>
+        <td>Android 14+ 前台服务必须声明类型</td>
+        <td><code>foregroundServiceType="specialUse"</code> + <code>FOREGROUND_SERVICE_SPECIAL_USE</code> 权限</td>
+      </tr>
+      <tr>
+        <td><code>setTorchMode</code> 的灯挂在进程上，进程被回收灯就灭</td>
+        <td>用前台服务持有，通知常驻；关灯时才 <code>stopForeground</code> + <code>stopSelf</code></td>
+      </tr>
+      <tr>
+        <td>磁贴和界面各存一份状态，会互相打脸</td>
+        <td>只存 <code>Prefs</code> 一份，<code>onResume</code> 时对齐；主按钮改成「按预设开灯」而不是「按 A/B 开关」</td>
+      </tr>
+      <tr>
+        <td>三个磁贴要显示不同副标题</td>
+        <td>每个磁贴一个 <code>TileService</code> 子类，共用 <code>BaseCmdTile</code> 渲染逻辑</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>三个磁贴与四个快捷方式</h3>
+
+  <table>
+    <thead><tr><th>入口</th><th>动作</th><th>副标题 / 说明</th></tr></thead>
+    <tbody>
+      <tr><td>磁贴「双芯手电」</td><td>开 / 关</td><td><code>上灯 · 100%</code> / <code>关闭</code></td></tr>
+      <tr><td>磁贴「手电灯路」</td><td>上灯 ↔ 双灯</td><td>当前灯路</td></tr>
+      <tr><td>磁贴「手电亮度」</td><td>100 → 70 → 40 → 100</td><td>当前百分比</td></tr>
+      <tr><td>快捷方式</td><td>开/关、切灯路、切亮度、关灯</td><td>长按图标；也会被「原子控件」面板收录</td></tr>
+    </tbody>
+  </table>
+
+  <div class="warn">
+    <b>需要说清楚的一点：</b>系统入口解决的是「少点两下」，不解决「点哪颗灯」。<br>
+    上灯 / 双灯都能一键切换，但<b>下灯（长焦那颗）依旧不可单独常亮</b> —— 那是 HAL 没暴露的通道，入口再多也变不出来。
+  </div>
+
+  <footer>
+    交付物：<code>DualTorch-v3.0.apk</code>（90 KB，自签名，minSdk 29 / targetSdk 35）· 源码 <code>vivo-dual-torch/</code> · 构建脚本 <code>build-apk.sh</code><br>
+    参考：vivo 官方社区 X200 Ultra / X300 Pro 闪光灯答疑、GitHub kailashrs/camx-fullsize、Linux leds-class-flash 与 MTK flashlight_core 驱动文档、Android Camera2 / CameraManager 文档、Linux leds-class-flash 驱动文档、GitHub danferns/lights 与 InkAssists/torch-tile。
+  </footer>
+</div>
+</body>
+</html>
