@@ -63,10 +63,14 @@
 
   <div class="eyebrow">DualTorch · 技术方案</div>
   <h1>让两颗变焦闪光灯一起亮
-    <small>针对 vivo X300 Ultra / X200 Ultra / X300 Pro 的双 LED 手电筒实现路径与工程验证</small>
+    <small>针对 vivo X300 Ultra（V2547A）的双 LED 手电筒实现路径与工程验证</small>
   </h1>
 
   <p class="lede">系统手电筒只驱动一颗灯，相机却能同时点亮两颗。这不是权限问题，而是 Android 的 Flash 抽象与厂商 HAL 之间的缝隙。下面是从硬件事实、开源调研到可安装 APK 的完整推演。</p>
+
+  <div class="note">
+    <b>版本与机型对照：</b>本文按时间顺序保留了开发过程的复盘记录，其中 1.1 / 2.0 / 2.1 / v3.0 是<b>内部迭代代号</b>，对外正式发布统一为 <b>v1.0.0</b>（<code>DualTorch-v1.0.0.apk</code>）。实测机型统一为 <b>vivo X300 Ultra（V2547A）</b>；早期草稿中的「X200 Pro / X300 Pro」为笔误。
+  </div>
 
   <div class="cards">
     <div class="card"><b>2 颗</b><span>灯珠挂在同一颗闪光灯驱动 IC 的两个通道上</span></div>
@@ -271,7 +275,7 @@ session.setRepeatingRequest(builder.build(), null, handler);</code></pre>
 
   <h2><span class="num">06</span>真机反馈与修正</h2>
 
-  <p>X300 Pro（V2547A，Android 17）第一次实测：策略选「相机会话」，只开 B 通道，滑杆放在 1.0×，结果<b>两颗灯一起亮了</b>。</p>
+  <p>X300 Ultra（V2547A，Android 17）第一次实测：策略选「相机会话」，只开 B 通道，滑杆放在 1.0×，结果<b>两颗灯一起亮了</b>。</p>
 
   <p>原因很直接：代码里为了让 B 生效，把 zoom 顶到了 <code>max(zoom, 2.0)</code>。而 2.0× 对应 48mm，<b>正好踩在 vivo 的双灯阈值上</b>。主摄会话里 HAL 只有「单灯 / 双灯」两种结果，不存在「只点长焦」这个选项 —— 这不是 bug，是我把 A/B 的语义设计错了。</p>
 
@@ -361,7 +365,7 @@ if (max &gt; 1 &amp;&amp; percent &gt; 0) {
 
   <h2><span class="num">09</span>第二轮复盘：四条通路全灭之后</h2>
 
-  <p>1.1 版在 X300 Pro（V2547A，Android 17）上实测的结果是：<b>所有通路都失败</b>。具体表现是「不管只开 A 还是只开 B，两颗灯一起亮」，亮度滑杆也毫无反应。这不是参数没调对，而是我把「应用层能控制到什么粒度」这件事想错了。下面是复盘用的证据链。</p>
+  <p>1.1 版在 X300 Ultra（V2547A，Android 17）上实测的结果是：<b>所有通路都失败</b>。具体表现是「不管只开 A 还是只开 B，两颗灯一起亮」，亮度滑杆也毫无反应。这不是参数没调对，而是我把「应用层能控制到什么粒度」这件事想错了。下面是复盘用的证据链。</p>
 
   <table>
     <thead><tr><th>证据</th><th>原文 / 事实</th><th>推论</th></tr></thead>
@@ -439,7 +443,7 @@ setTorchLevel(id, 1);    readAtOne = getTorchStrengthLevel(id);
 
   <h2><span class="num">10</span>第三轮：真机自检的实测结果</h2>
 
-  <p>2.0 的自检在 X300 Pro（V2547A，Android 17，无 root）上跑完了。结果不是「全灭」，而是一个很具体的形状：<b>单灯通道存在，但只属于上面那颗</b>。</p>
+  <p>2.0 的自检在 X300 Ultra（V2547A，Android 17，无 root）上跑完了。结果不是「全灭」，而是一个很具体的形状：<b>单灯通道存在，但只属于上面那颗</b>。</p>
 
   <pre><code>设备 : vivo V2547A / PD2547 / API 37      Root : 无      相机 : 8 个候选
 
@@ -589,15 +593,14 @@ builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);</code><
     </tbody>
   </table>
 
-  <h3>三个磁贴与四个快捷方式</h3>
+  <h3>两个磁贴与四个快捷方式</h3>
 
   <table>
     <thead><tr><th>入口</th><th>动作</th><th>副标题 / 说明</th></tr></thead>
     <tbody>
-      <tr><td>磁贴「双芯手电」</td><td>开 / 关</td><td><code>上灯 · 100%</code> / <code>关闭</code></td></tr>
-      <tr><td>磁贴「手电灯路」</td><td>上灯 ↔ 双灯</td><td>当前灯路</td></tr>
-      <tr><td>磁贴「手电亮度」</td><td>100 → 70 → 40 → 100</td><td>当前百分比</td></tr>
-      <tr><td>快捷方式</td><td>开/关、切灯路、切亮度、关灯</td><td>长按图标；也会被「原子控件」面板收录</td></tr>
+      <tr><td>磁贴「双芯闪光灯」</td><td>开 / 关</td><td><code>广角 · 最亮</code> / <code>关闭</code>（沿用上次设置）</td></tr>
+      <tr><td>磁贴「手电灯路」</td><td>广角 ↔ 双灯</td><td>当前灯路</td></tr>
+      <tr><td>快捷方式</td><td>开/关、切灯路、切亮度、关灯</td><td>长按图标；也会被「原子控件」面板收录。切亮度走这里，不占磁贴位</td></tr>
     </tbody>
   </table>
 
@@ -607,8 +610,8 @@ builder.set(CaptureRequest.FLASH_MODE, CaptureRequest.FLASH_MODE_TORCH);</code><
   </div>
 
   <footer>
-    交付物：<code>DualTorch-v3.0.apk</code>（90 KB，自签名，minSdk 29 / targetSdk 35）· 源码 <code>vivo-dual-torch/</code> · 构建脚本 <code>build-apk.sh</code><br>
-    参考：vivo 官方社区 X200 Ultra / X300 Pro 闪光灯答疑、GitHub kailashrs/camx-fullsize、Linux leds-class-flash 与 MTK flashlight_core 驱动文档、Android Camera2 / CameraManager 文档、Linux leds-class-flash 驱动文档、GitHub danferns/lights 与 InkAssists/torch-tile。
+    交付物：<code>DualTorch-v1.0.0.apk</code>（98 KB，自签名，minSdk 29 / targetSdk 35）· 源码 <code>vivo-dual-torch/</code> · 构建脚本 <code>build-apk.sh</code><br>
+    参考：vivo 官方社区 X200 Ultra / X300 Ultra 闪光灯答疑、GitHub kailashrs/camx-fullsize、Linux leds-class-flash 与 MTK flashlight_core 驱动文档、Android Camera2 / CameraManager 文档、GitHub danferns/lights 与 InkAssists/torch-tile。
   </footer>
 </div>
 </body>
