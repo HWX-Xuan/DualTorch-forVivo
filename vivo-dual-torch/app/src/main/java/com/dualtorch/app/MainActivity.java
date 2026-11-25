@@ -21,6 +21,7 @@ import android.widget.TextView;
 import com.dualtorch.app.core.LogBus;
 import com.dualtorch.app.core.Prefs;
 import com.dualtorch.app.core.TorchController;
+import com.dualtorch.app.core.UpdateChecker;
 
 /**
  * 主界面：只做两件事 —— 灯路切换 + 亮度。
@@ -87,6 +88,33 @@ public class MainActivity extends Activity implements TorchController.Listener, 
         if (savedInstanceState == null && Prefs.autoOnLaunch(this) && !Prefs.lit(this)) {
             launchDual();
         }
+
+        // 延迟几秒再查更新，别和开灯、权限弹窗抢时机
+        ui.postDelayed(this::autoCheckUpdate, 3500);
+    }
+
+    /**
+     * 启动时静默检查更新：6 小时内只查一次，跳过用户标记过的版本。
+     * 没网、仓库 404、解析失败都直接放弃，不打扰用户。
+     */
+    private void autoCheckUpdate() {
+        if (isFinishing() || !Prefs.autoUpdate(this)) {
+            return;
+        }
+        long last = Prefs.lastUpdateCheck(this);
+        if (System.currentTimeMillis() - last < 6 * 60 * 60 * 1000L) {
+            return;
+        }
+        Prefs.setLastUpdateCheck(this, System.currentTimeMillis());
+        UpdateChecker.check(this, (rel, err) -> {
+            if (rel == null || isFinishing()) {
+                return;
+            }
+            if (rel.version.equals(Prefs.skippedVersion(this))) {
+                return;
+            }
+            UpdateDialog.show(this, rel);
+        });
     }
 
     /**
@@ -389,6 +417,14 @@ public class MainActivity extends Activity implements TorchController.Listener, 
         renderFocal();
         renderStrength(level);
         refresh();
+
+        // 系统在后台可能把相机会话切断（尤其没走 camera 类型前台服务时）。
+        // 回到前台发现灯应该亮着、会话却没了，就补点一次。
+        if (Prefs.lit(this) && focal == Prefs.FOCAL_DUAL
+                && !controller.isSessionRunning() && !controller.isSessionOpening()) {
+            LogBus.i("回到前台，双灯会话已断，重新点亮");
+            controller.applyFocal(focal, level);
+        }
     }
 
     @Override

@@ -198,6 +198,35 @@ public final class Prefs {
         sp(ctx).edit().putBoolean("auto_on_launch", v).apply();
     }
 
+    // ---------------- 自动更新 ----------------
+
+    /** 是否在启动时自动检查更新，默认开。 */
+    public static boolean autoUpdate(Context ctx) {
+        return sp(ctx).getBoolean("auto_update", true);
+    }
+
+    public static void setAutoUpdate(Context ctx, boolean v) {
+        sp(ctx).edit().putBoolean("auto_update", v).apply();
+    }
+
+    /** 用户选择「跳过此版本」后记录的版本号，该版本不再提示。 */
+    public static String skippedVersion(Context ctx) {
+        return sp(ctx).getString("skipped_version", "");
+    }
+
+    public static void setSkippedVersion(Context ctx, String v) {
+        sp(ctx).edit().putString("skipped_version", v == null ? "" : v).apply();
+    }
+
+    /** 上次检查更新的时间戳，避免每次回到前台都请求一次。 */
+    public static long lastUpdateCheck(Context ctx) {
+        return sp(ctx).getLong("last_update_check", 0L);
+    }
+
+    public static void setLastUpdateCheck(Context ctx, long t) {
+        sp(ctx).edit().putLong("last_update_check", t).apply();
+    }
+
     /** 状态一句话描述，磁贴与通知共用。 */
     public static String summary(Context ctx) {
         if (!lit(ctx)) {

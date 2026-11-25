@@ -1,5 +1,6 @@
 package com.dualtorch.app;
 
+import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -7,6 +8,8 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.content.pm.ServiceInfo;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
@@ -99,9 +102,39 @@ public class TorchService extends Service implements TorchController.Listener {
             cmd = CMD_TOGGLE;
         }
         // 先挂上前台通知，再干活：Android 要求 startForegroundService 后 5 秒内必须 startForeground
-        startForeground(NOTIF_ID, buildNotification());
+        goForeground();
         enqueue(cmd);
         return START_NOT_STICKY;
+    }
+
+    /**
+     * 前台服务必须声明 camera 类型。
+     *
+     * Android 11 起，应用退到后台后系统会切断相机会话（CameraDevice 回调 error 3 =
+     * ERROR_CAMERA_DISABLED），表现就是「退出应用约 5 秒后灯自己灭、状态栏相机图标消失」。
+     * 只有把服务标成 camera 类型，后台才允许继续持有相机。
+     *
+     * Android 14 起还需要 FOREGROUND_SERVICE_CAMERA 权限；没授相机权限时降级为
+     * specialUse，保证单灯（系统手电）仍能常驻。
+     */
+    private void goForeground() {
+        Notification n = buildNotification();
+        if (Build.VERSION.SDK_INT < 29) {
+            startForeground(NOTIF_ID, n);
+            return;
+        }
+        boolean hasCamera = checkSelfPermission(Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED;
+        try {
+            if (Build.VERSION.SDK_INT >= 34 && !hasCamera) {
+                startForeground(NOTIF_ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE);
+            } else {
+                startForeground(NOTIF_ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
+            }
+        } catch (Throwable t) {
+            LogBus.e("camera 类型前台服务启动失败，降级为普通前台服务：" + t);
+            startForeground(NOTIF_ID, n);
+        }
     }
 
     /** 串行执行队列；不人为等待，只保证同一时刻只有一条命令在跑。 */

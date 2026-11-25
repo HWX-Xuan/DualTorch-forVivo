@@ -12,7 +12,7 @@ import com.dualtorch.app.core.LogBus;
 import com.dualtorch.app.core.Prefs;
 
 /**
- * 三个磁贴的公共骨架。
+ * 控制中心磁贴的公共骨架。
  *
  * 一个 App 可以有多个磁贴，做法是每个磁贴声明一个独立的 TileService 子类。
  * 状态统一从 Prefs 读，命令统一丢给 TorchService —— 磁贴自己不碰相机。

@@ -4,7 +4,6 @@
     <string name="probe_title">硬件探测</string>
     <string name="tile_label">双芯闪光灯</string>
     <string name="tile_led_label">手电灯路</string>
-    <string name="tile_bright_label">手电亮度</string>
 
     <string name="sc_toggle_short">开/关手电</string>
     <string name="sc_toggle_long">开 / 关手电（按上次的灯路与亮度）</string>

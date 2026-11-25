@@ -25,8 +25,8 @@ echo "==> aapt2 link"
   --java "$OUT/gen" \
   --min-sdk-version 29 \
   --target-sdk-version 35 \
-  --version-code 10000 \
-  --version-name 1.0.0 \
+  --version-code 10001 \
+  --version-name 1.0.1 \
   --auto-add-overlay
 
 echo "==> javac"

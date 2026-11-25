@@ -7,7 +7,12 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+
+    <!-- 仅用于访问 GitHub Releases 检查更新；不采集、不上传任何数据 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.flash" android:required="false" />
@@ -18,6 +23,13 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
+        <!-- 只向系统安装器暴露 cacheDir/update/ 下的安装包 -->
+        <provider
+            android:name=".ApkProvider"
+            android:authorities="com.dualtorch.app.apk"
+            android:exported="false"
+            android:grantUriPermissions="true" />
 
         <activity
             android:name=".MainActivity"
@@ -74,11 +86,13 @@
             android:screenOrientation="portrait"
             android:label="Root 直控" />
 
-        <!-- 手电持有者：进程活着灯才活着 -->
+        <!-- 手电持有者：进程活着灯才活着。
+             camera 类型是必须的：没有它，应用一退到后台系统就切断相机会话（error 3），
+             双灯会在约 5 秒后自己灭。specialUse 用于没有相机权限时的降级。 -->
         <service
             android:name=".TorchService"
             android:exported="false"
-            android:foregroundServiceType="specialUse">
+            android:foregroundServiceType="camera|specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="flashlight" />

@@ -470,6 +470,11 @@ public class TorchController {
         return cam.isRunning();
     }
 
+    /** 会话正在打开（openCamera 已发出、还没回调）。 */
+    public boolean isSessionOpening() {
+        return opening;
+    }
+
     public void apply() {
         if (sys == null) {
             notifyState("相机服务不可用");

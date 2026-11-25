@@ -22,6 +22,7 @@ import android.widget.Toast;
 import com.dualtorch.app.core.LogBus;
 import com.dualtorch.app.core.Prefs;
 import com.dualtorch.app.core.TorchController;
+import com.dualtorch.app.core.UpdateChecker;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -54,6 +55,7 @@ public class AdvancedActivity extends Activity implements LogBus.Sink {
         setupStyleChips();
         setupStrobeChips();
         setupEntryCard();
+        setupUpdateCard();
         setupTools();
         updateModeHint();
 
@@ -221,8 +223,8 @@ public class AdvancedActivity extends Activity implements LogBus.Sink {
     private void showGuide() {
         String text =
                 "① 控制中心（可用）\n"
-                        + "下拉控制中心 → 编辑（铅笔）→ 全部开关 → 找到「双芯手电 / 手电灯路 / 手电亮度」，拖进常用区。\n"
-                        + "三个磁贴分别管：开关、灯路（广角单灯 ↔ 双灯）、亮度（100→70→40，仅广角档有效）。\n\n"
+                        + "下拉控制中心 → 编辑（铅笔）→ 全部开关 → 找到「双芯闪光灯 / 手电灯路」，拖进常用区。\n"
+                        + "两个磁贴分别管：开关（开 / 关手电）和灯路（广角单灯 ↔ 双灯）；调亮度请用通知栏或桌面快捷方式「切亮度」。\n\n"
                         + "② 快捷启动（可用，熄屏也能用）\n"
                         + "设置 → 快捷与辅助 → 快捷启动 → 打开 → 打开应用 → 双芯闪光灯。\n"
                         + "回到本页打开「打开应用即开灯」，长按音量减就直接亮灯。\n\n"
@@ -246,6 +248,38 @@ public class AdvancedActivity extends Activity implements LogBus.Sink {
                 .setView(sv)
                 .setPositiveButton("知道了", null)
                 .show();
+    }
+
+    // ---------------- 关于与更新 ----------------
+
+    private void setupUpdateCard() {
+        TextView tvVersion = findViewById(R.id.tvAboutVersion);
+        tvVersion.setText("双芯闪光灯 v" + UpdateChecker.appVersion(this));
+
+        Switch sw = findViewById(R.id.swAutoUpdate);
+        sw.setChecked(Prefs.autoUpdate(this));
+        sw.setOnCheckedChangeListener((b, checked) -> {
+            Prefs.setAutoUpdate(this, checked);
+            LogBus.i("自动检查更新 → " + (checked ? "开" : "关"));
+        });
+
+        findViewById(R.id.btnCheckUpdate).setOnClickListener(v -> manualCheck());
+    }
+
+    private void manualCheck() {
+        Toast.makeText(this, "正在检查更新…", Toast.LENGTH_SHORT).show();
+        UpdateChecker.check(this, (rel, err) -> {
+            if (err != null) {
+                Toast.makeText(this, err, Toast.LENGTH_LONG).show();
+                return;
+            }
+            if (rel == null) {
+                Toast.makeText(this, "已是最新版本 v" + UpdateChecker.appVersion(this),
+                        Toast.LENGTH_SHORT).show();
+                return;
+            }
+            UpdateDialog.show(this, rel);
+        });
     }
 
     // ---------------- 工具 ----------------
